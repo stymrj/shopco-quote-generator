@@ -18,10 +18,11 @@ const createQuote = async (req, res) => {
     const quoteItems = items.map((item) => {
       const quantity = Number(item.quantity) || 1
       const unitPrice = Number(item.price || item.unitPrice) || 0
+      const productId = item._id || item.product || item.zohoProductId || ''
 
       return {
-        product: isMongoObjectId(item._id) ? item._id : undefined,
-        zohoProductId: item.zohoProductId || item._id || '',
+        product: String(productId),
+        zohoProductId: item.zohoProductId || item._id || item.product || '',
         name: item.name,
         sku: item.sku || '',
         image: item.image || '',

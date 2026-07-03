@@ -3,8 +3,8 @@ const mongoose = require('mongoose')
 const quoteItemSchema = new mongoose.Schema(
   {
     product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
+      type: String,
+      default: '',
     },
     zohoProductId: {
       type: String,
