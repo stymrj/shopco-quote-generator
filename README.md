@@ -172,11 +172,20 @@ Docker reads backend environment variables from `backend/.env`. Keep real secret
 ssh -i your-key.pem ubuntu@YOUR_EC2_PUBLIC_IP
 ```
 
-4. Install Docker:
+4. Install Docker and Docker Compose V2:
 
 ```bash
 sudo apt update
-sudo apt install -y docker.io docker-compose-plugin git
+sudo apt install -y ca-certificates curl gnupg git
+
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo ${UBUNTU_CODENAME:-$VERSION_CODENAME}) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo usermod -aG docker ubuntu
 newgrp docker
 ```
@@ -186,12 +195,12 @@ newgrp docker
 ```bash
 git clone https://github.com/stymrj/shopco-quote-generator.git
 cd shopco-quote-generator
-cp backend/.env.example backend/.env
+cp backend/.env.production.example backend/.env
 nano backend/.env
 docker compose up -d --build
 ```
 
-For EC2, set at least these values in `backend/.env`:
+For EC2 live Zoho deployment, fill these values in `backend/.env`:
 
 ```env
 CLIENT_URL=http://YOUR_EC2_PUBLIC_IP
