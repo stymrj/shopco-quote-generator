@@ -88,12 +88,7 @@ const fetchZohoProducts = async (type) => {
   const config = getZohoConfig()
   const apiBaseUrl = tokenData.apiBaseUrl || config.apiBaseUrl
 
-  let where = 'WHERE (Product_Active = true)'
-  if (type && type !== 'All') {
-    where = `WHERE (Product_Active = true and Product_Category = '${type}')`
-  }
-
-  const selectQuery = `SELECT id,Product_Name,Product_Code,Product_Active,Product_Category,Created_Time,Unit_Price,Usage_Unit,Qty_in_Stock,Description FROM Products ${where} ORDER BY Created_Time desc`
+  const selectQuery = 'SELECT id,Product_Name,Product_Code,Product_Active,Product_Category,Created_Time,Unit_Price,Usage_Unit,Qty_in_Stock,Description FROM Products WHERE (Product_Active = true) ORDER BY Created_Time desc'
 
   const response = await fetch(`${apiBaseUrl}/crm/v7/coql`, {
     method: 'POST',
@@ -110,7 +105,13 @@ const fetchZohoProducts = async (type) => {
     throw new Error(data.message || 'Zoho product fetch failed')
   }
 
-  return (data.data || []).map(mapZohoProduct)
+  const products = (data.data || []).map(mapZohoProduct)
+
+  if (type && type !== 'All') {
+    return products.filter((product) => product.type === type)
+  }
+
+  return products
 }
 
 const fetchZohoProductById = async (productId) => {

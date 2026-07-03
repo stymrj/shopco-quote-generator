@@ -1,6 +1,8 @@
 const { Quote } = require('../models/quoteSchema')
 const { createZohoQuote, isZohoEnabled } = require('./zohoService')
 
+const isMongoObjectId = (id) => /^[a-f\d]{24}$/i.test(String(id))
+
 const createQuote = async (req, res) => {
   try {
     const { subject, dealer, validTill, items } = req.body
@@ -18,7 +20,7 @@ const createQuote = async (req, res) => {
       const unitPrice = Number(item.price || item.unitPrice) || 0
 
       return {
-        product: item._id && !String(item._id).startsWith('sample-') ? item._id : undefined,
+        product: isMongoObjectId(item._id) ? item._id : undefined,
         zohoProductId: item.zohoProductId || item._id || '',
         name: item.name,
         sku: item.sku || '',
@@ -34,14 +36,18 @@ const createQuote = async (req, res) => {
     let zohoRecordId = ''
 
     if (isZohoEnabled()) {
-      const zohoResponse = await createZohoQuote({
-        subject,
-        dealer,
-        validTill,
-        items: quoteItems,
-      })
+      try {
+        const zohoResponse = await createZohoQuote({
+          subject,
+          dealer,
+          validTill,
+          items: quoteItems,
+        })
 
-      zohoRecordId = zohoResponse?.data?.[0]?.details?.id || ''
+        zohoRecordId = zohoResponse?.data?.[0]?.details?.id || ''
+      } catch (error) {
+        console.warn(`Zoho quote sync skipped: ${error.message}`)
+      }
     }
 
     const quoteData = {
